@@ -7,6 +7,10 @@
 
 import SwiftUI
 
+enum Field: Int, CaseIterable {
+    case email, password
+}
+
 struct CustomTextField: View {
     @Binding var text: String
     var title: String

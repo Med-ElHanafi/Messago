@@ -10,6 +10,8 @@ import SwiftUI
 struct LoginView: View {
     @FocusState private var focusedInput: Field?
     
+    @State private var viewModel = LoginViewModel()
+    
     var body: some View {
         ScrollView {
             logoBanner
@@ -48,8 +50,15 @@ struct LoginView: View {
                 }
             }
         }
+        .alert("Signin error", isPresented: $viewModel.errorIsPresented) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(viewModel.errorMessage)
+        }
     }
-    
+}
+
+private extension LoginView {
     private var logoBanner: some View {
         VStack {
             Image(.logo)
@@ -64,7 +73,7 @@ struct LoginView: View {
     
     private var emailTextField: some View {
         CustomTextField(
-            text: .constant(""),
+            text: $viewModel.email,
             title: "Email",
             placeholder: "example@email.com"
         )
@@ -72,7 +81,7 @@ struct LoginView: View {
     
     private var passwordTextField: some View {
         CustomTextField(
-            text: .constant(""),
+            text: $viewModel.password,
             title: "Password",
             placeholder: "•••••••••••",
             secure: true
@@ -81,7 +90,9 @@ struct LoginView: View {
     
     private var loginButton: some View {
         Button("Login") {
-            
+            Task {
+                await viewModel.signIn()
+            }
         }
         .padding(.vertical, 20)
         .foregroundStyle(.white)
@@ -92,7 +103,6 @@ struct LoginView: View {
     
     private var signupButton: some View {
         Button("Don't have an account? Sign up") {
-            
         }
         .fontWeight(.medium)
         .frame(maxWidth: .infinity)
@@ -100,16 +110,13 @@ struct LoginView: View {
 }
 
 private extension LoginView {
-    private enum Field: Int, CaseIterable {
-        case email, password
-    }
-    
-    private func focusNextField() {
+    func focusNextField() {
         focusedInput = focusedInput.map {
             Field(rawValue: $0.rawValue + 1) ?? .email
         }
     }
 }
+
 #Preview {
     LoginView()
 }
